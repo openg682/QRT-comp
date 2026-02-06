@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from qsec_client import prepare_targets_file, upload_targets_file
-
+from constants import private_key
 # ============================================
 # YOUR STRATEGY LOGIC GOES HERE
 # ============================================
@@ -32,6 +32,6 @@ upload_targets_file(
     csv_path,
     REGION,
     sftp_username="q9968",
-    private_key_path=Path("/Users/om/Downloads/cam18_id_rsa"),
+    private_key_path= private_key, #just change this each time or we can put it in a separate file and then gitignore
     sftp_host="sftp.qrt.cloud",
 )
