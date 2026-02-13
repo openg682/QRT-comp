@@ -1,4 +1,0 @@
-id_specific,extra_key,value_ts,strategy,internal_code,ric,ticker,target_notional,currency,target_contracts,ref_price,advisor_name
-CAM18,CAM18_AAPL.O,2026-02-06 17:50,CAM18_AMER,AAPL.O,AAPL.O,AAPL.O,500000,USD,0,0.0,CAM18
-CAM18,CAM18_MSFT.O,2026-02-06 17:50,CAM18_AMER,MSFT.O,MSFT.O,MSFT.O,-300000,USD,0,0.0,CAM18
-CAM18,CAM18_TSLA.O,2026-02-06 17:50,CAM18_AMER,TSLA.O,TSLA.O,TSLA.O,200000,USD,0,0.0,CAM18

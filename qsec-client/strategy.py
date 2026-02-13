@@ -15,7 +15,7 @@ from constants import private_key
 targets = pd.DataFrame({
     "internal_code": ["AAPL.O", "MSFT.O", "TSLA.O"],  # RIC codes
     "currency": ["USD", "USD", "USD"],
-    "target_notional": [500000, -300000, 200000],  # positive = long, negative = short
+    "target_notional": [-500000, 300000, -200000],  # positive = long, negative = short
 })
 
 # === PIPELINE (don't change much here) ===
