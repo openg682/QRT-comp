@@ -1,37 +1,63 @@
+"""
+QRT Academy Strategy Runner
+============================
+Runs mean reversion (and eventually combines with momentum + value),
+then formats and uploads targets to QRT.
+"""
+
 import pandas as pd
 from pathlib import Path
-from qsec_client import prepare_targets_file, upload_targets_file
+from qsec_client.sample_code import prepare_targets_file, upload_targets_file
 from constants import private_key
-# ============================================
-# YOUR STRATEGY LOGIC GOES HERE
-# ============================================
-# - Fetch/load market data
-# - Generate signals
-# - Decide which stocks to go long/short
-# - Size positions (respecting the $2M cap, 2.5% ADV, $500k risk limit)
-# ============================================
+from mean_reversion import generate_mean_reversion_targets
 
-# Your strategy must produce a DataFrame like this:
-targets = pd.DataFrame({
-    "internal_code": ["AAPL.O", "MSFT.O", "TSLA.O"],  # RIC codes
-    "currency": ["USD", "USD", "USD"],
-    "target_notional": [-500000, 300000, -200000],  # positive = long, negative = short
-})
+# ── Credentials & Config ─────────────────────────────────────────────────────
 
-# === PIPELINE (don't change much here) ===
 GROUP_ID = "CAM18"
-REGION = "AMER"  # or "EMEA"
+SFTP_USERNAME = "q9968"
+SFTP_HOST = "sftp.qrt.cloud"
 OUTPUT_DIR = Path("./output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# 1. Format the CSV
-csv_path = prepare_targets_file(targets, GROUP_ID, REGION, OUTPUT_DIR)
+# Set your LSEG Eikon app key here (or in mean_reversion.py)
+EIKON_APP_KEY = None  # e.g. "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-# 2. Upload to QRT
-upload_targets_file(
-    csv_path,
-    REGION,
-    sftp_username="q9968",
-    private_key_path= private_key, #just change this each time or we can put it in a separate file and then gitignore
-    sftp_host="sftp.qrt.cloud",
-)
+
+# ── Generate Targets ─────────────────────────────────────────────────────────
+
+def run():
+    all_targets = []
+
+    # Mean reversion — AMER
+    amer_targets = generate_mean_reversion_targets("AMER", app_key=EIKON_APP_KEY)
+    if not amer_targets.empty:
+        all_targets.append(("AMER", amer_targets))
+
+    # Mean reversion — EMEA
+    emea_targets = generate_mean_reversion_targets("EMEA", app_key=EIKON_APP_KEY)
+    if not emea_targets.empty:
+        all_targets.append(("EMEA", emea_targets))
+
+    # ── Upload each region ────────────────────────────────────────────────────
+
+    for region, targets in all_targets:
+        print(f"\n--- Uploading {region}: {len(targets)} positions ---")
+
+        csv_path = prepare_targets_file(targets, GROUP_ID, region, OUTPUT_DIR)
+
+        upload_targets_file(
+            csv_path,
+            region,
+            sftp_username=SFTP_USERNAME,
+            private_key_path=private_key,
+            sftp_host=SFTP_HOST,
+        )
+
+        print(f"  ✓ {region} uploaded successfully")
+
+    if not all_targets:
+        print("\n⚠ No targets generated for any region. Check data/connection.")
+
+
+if __name__ == "__main__":
+    run()
